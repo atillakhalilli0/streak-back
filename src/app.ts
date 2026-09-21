@@ -7,6 +7,9 @@ import { notFoundHandler, errorHandler } from "./middlewares/error.middleware.js
 import healthRouter from "./routes/health.routes.js";
 import authRouter from "./routes/auth.routes.js";
 import streaksRouter from "./routes/streaks.routes.js";
+import profilesRouter from "./routes/profiles.routes.js";
+import notificationsRouter from "./routes/notifications.routes.js";
+import cronRouter from "./routes/cron.routes.js";
 
 const app = express();
 
@@ -21,6 +24,12 @@ app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use("/api/health", healthRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/streaks", streaksRouter);
+app.use("/api/profiles", profilesRouter);
+app.use("/api/notifications", notificationsRouter);
+
+// Machine-to-machine. Guarded by a shared secret (x-cron-secret), not a
+// user JWT - see middlewares/cron.middleware.ts.
+app.use("/api/internal/cron", cronRouter);
 
 app.use(notFoundHandler);
 app.use(errorHandler);

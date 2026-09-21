@@ -20,7 +20,9 @@ const options: swaggerJSDoc.Options = {
       },
     },
   },
-  apis: ["./src/routes/*.ts"],
+  // Both globs so the docs also work from a compiled build (dist/),
+  // not just under tsx in development.
+  apis: ["./src/routes/*.ts", "./dist/routes/*.js"],
 };
 
 export const swaggerSpec = swaggerJSDoc(options);

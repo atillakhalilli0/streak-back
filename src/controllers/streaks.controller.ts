@@ -1,5 +1,6 @@
 import type { Request, Response } from "express";
 import { getUserScopedClient, supabaseAnon } from "../config/supabase.js";
+import { requireParam } from "../utils/params.js";
 import { AppError } from "../middlewares/error.middleware.js";
 import * as StreaksService from "../services/streaks.service.js";
 
@@ -19,7 +20,7 @@ export async function getExploreStreaks(req: Request, res: Response) {
 
 export async function getStreak(req: Request, res: Response) {
   const db = req.accessToken ? getUserScopedClient(req.accessToken) : supabaseAnon;
-  const streak = await StreaksService.getStreakById(db, req.params.id!);
+  const streak = await StreaksService.getStreakById(db, requireParam(req, "id"));
   res.json(streak);
 }
 
@@ -40,12 +41,12 @@ export async function postStreak(req: Request, res: Response) {
 
 export async function removeStreak(req: Request, res: Response) {
   const db = getUserScopedClient(req.accessToken!);
-  await StreaksService.deleteStreak(db, req.params.id!);
+  await StreaksService.deleteStreak(db, requireParam(req, "id"));
   res.status(204).send();
 }
 
 export async function postJoinStreak(req: Request, res: Response) {
   const db = getUserScopedClient(req.accessToken!);
-  const streak = await StreaksService.joinStreak(db, req.user!.id, req.params.id!);
+  const streak = await StreaksService.joinStreak(db, req.user!.id, requireParam(req, "id"));
   res.status(201).json(streak);
 }

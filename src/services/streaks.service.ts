@@ -10,13 +10,17 @@ export interface CreateStreakInput {
   origin_streak_id?: string | null;
 }
 
-export async function listMyStreaks(db: SupabaseClient, userId: string): Promise<Streak[]> {
+export async function listMyStreaks(
+  db: SupabaseClient,
+  userId: string
+): Promise<StreakWithRelations[]> {
+
   const { data, error } = await db
     .from("streaks")
-    .select("*")
+    .select("*, check_ins(date)")
     .eq("user_id", userId)
     .order("created_at", { ascending: false })
-    .returns<Streak[]>();
+    .returns<StreakWithRelations[]>();
 
   if (error) throw new AppError(error.message, 500);
   return data;
@@ -40,8 +44,8 @@ export async function getStreakById(db: SupabaseClient, streakId: string): Promi
     .from("streaks")
     .select("*, profiles(username, avatar_url), check_ins(date), streak_runs(*)")
     .eq("id", streakId)
-    .single()
-    .returns<StreakWithRelations>();
+    .returns<StreakWithRelations[]>()
+    .single();
 
   if (error) throw new AppError("Streak not found", 404);
   return data;
@@ -63,8 +67,8 @@ export async function createStreak(
       origin_streak_id: input.origin_streak_id ?? null,
     })
     .select()
-    .single()
-    .returns<Streak>();
+    .returns<Streak[]>()
+    .single();
 
   if (error) throw new AppError(error.message, 400);
   return data;
@@ -88,8 +92,8 @@ export async function joinStreak(
     .from("streaks")
     .select("title, tag, privacy")
     .eq("id", originStreakId)
-    .single()
-    .returns<Pick<Streak, "title" | "tag" | "privacy">>();
+    .returns<Pick<Streak, "title" | "tag" | "privacy">[]>()
+    .single();
 
   if (fetchError || !original) throw new AppError("Original streak not found", 404);
   if (original.privacy !== "public") throw new AppError("Cannot join a private streak", 403);
